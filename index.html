@@ -3,79 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BORK AI - LM Studio Чат</title>
+    <title>BORK AI | Персональный ассистент</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
         body {
-            background-color: #0f0a03;
-            color: #f0e6d6;
+            background: #000000;
+            color: #ffffff;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            line-height: 1.5;
         }
 
         .header {
-            background-color: #0f0a03;
-            padding: 20px 15px 15px;
+            background: #000000;
+            padding: 24px 20px 16px;
             text-align: center;
-            position: relative;
-            z-index: 10;
-            border-bottom: 1px solid #2a2218;
+            border-bottom: 1px solid #1a1a1a;
         }
 
-        .header h1 {
-            font-size: 1.4rem;
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .logo-accent {
             font-weight: 400;
-            color: #f0e6d6;
-            letter-spacing: -0.3px;
+            color: #ffffff;
         }
 
-        .status-indicator {
-            font-size: 0.8rem;
-            margin-top: 5px;
-            color: #5a5247;
-        }
-
-        .status-connected {
-            color: #00ff88;
-        }
-
-        .status-disconnected {
-            color: #ff4444;
+        .subtitle {
+            font-size: 0.9rem;
+            color: #666666;
+            font-weight: 300;
+            letter-spacing: 0.5px;
         }
 
         .chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 15px;
+            padding: 20px 16px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
-            background-color: #0f0a03;
+            gap: 16px;
+            background: #000000;
         }
 
         .message {
-            max-width: 85%;
-            padding: 14px 18px;
-            border-radius: 18px;
-            position: relative;
+            max-width: 75%;
+            padding: 16px 20px;
+            border-radius: 8px;
             line-height: 1.5;
             word-wrap: break-word;
-            font-size: 15px;
-            animation: messageAppear 0.3s ease-out;
+            font-size: 14px;
+            animation: messageAppear 0.25s ease-out;
+            position: relative;
         }
 
         @keyframes messageAppear {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(8px);
             }
             to {
                 opacity: 1;
@@ -85,69 +83,98 @@
 
         .user-message {
             align-self: flex-end;
-            background-color: #1a1208;
-            color: #f0e6d6;
-            border-bottom-right-radius: 4px;
-            border: 1px solid #3a3329;
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333333;
         }
 
         .ai-message {
             align-self: flex-start;
-            background-color: #1a1208;
-            color: #f0e6d6;
-            border-bottom-left-radius: 4px;
-            border: 1px solid #3a3329;
+            background: #0d0d0d;
+            color: #ffffff;
+            border: 1px solid #262626;
+        }
+
+        .connection-message {
+            align-self: center;
+            background: #0d0d0d;
+            color: #666666;
+            border: 1px solid #262626;
+            text-align: center;
+            font-style: italic;
+            max-width: 85%;
+        }
+
+        .error-message {
+            align-self: center;
+            background: #1a0d0d;
+            color: #cc3333;
+            border: 1px solid #331a1a;
+            text-align: center;
+            max-width: 85%;
+            font-size: 13px;
         }
 
         .input-container {
-            background-color: #0f0a03;
-            padding: 20px 15px;
+            background: #000000;
+            padding: 20px 16px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .input-wrapper {
             display: flex;
             gap: 12px;
-            border-top: 1px solid #2a2218;
+            align-items: flex-end;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .input-field {
             flex: 1;
-            padding: 15px 18px;
-            border: 1px solid #3a3329;
-            border-radius: 24px;
-            background-color: #0f0a03;
-            color: #f0e6d6;
-            font-size: 15px;
+            padding: 16px 20px;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            background: #0d0d0d;
+            color: #ffffff;
+            font-size: 14px;
             outline: none;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            min-height: 52px;
+            resize: none;
         }
 
         .input-field:focus {
-            border-color: #e65c00;
+            border-color: #555555;
+            background: #1a1a1a;
         }
 
         .input-field:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
         .input-field::placeholder {
-            color: #5a5247;
+            color: #666666;
         }
 
         .send-button {
-            background-color: #e65c00;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            background: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            width: 52px;
+            height: 52px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .send-button:hover:not(:disabled) {
-            background-color: #ff7733;
+            background: #333333;
+            border-color: #555555;
         }
 
         .send-button:active:not(:disabled) {
@@ -155,26 +182,26 @@
         }
 
         .send-button:disabled {
-            background-color: #5a5247;
+            opacity: 0.3;
             cursor: not-allowed;
-            opacity: 0.6;
+            transform: none;
         }
 
         .send-button svg {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
         }
 
         .typing-indicator {
             display: none;
             align-self: flex-start;
-            background-color: #1a1208;
-            color: #f0e6d6;
-            padding: 14px 18px;
-            border-radius: 18px;
-            border-bottom-left-radius: 4px;
+            background: #0d0d0d;
+            color: #666666;
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid #262626;
             font-style: italic;
-            border: 1px solid #3a3329;
+            font-size: 14px;
         }
 
         .typing-dots {
@@ -203,27 +230,50 @@
             }
         }
 
-        .error-message {
-            align-self: flex-start;
-            background-color: #3a1208;
-            color: #ff6b6b;
-            padding: 14px 18px;
-            border-radius: 18px;
-            border-bottom-left-radius: 4px;
-            font-size: 14px;
-            border: 1px solid #5a2a2a;
+        .file-section {
+            max-width: 800px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .info-message {
-            align-self: center;
-            background-color: #1a2a3a;
-            color: #6bc5ff;
+        .file-input {
+            display: none;
+        }
+
+        .file-button {
+            background: #0d0d0d;
+            color: #666666;
+            border: 1px dashed #333333;
+            border-radius: 6px;
             padding: 10px 16px;
-            border-radius: 12px;
             font-size: 13px;
-            text-align: center;
-            max-width: 70%;
-            border: 1px solid #2a4a6a;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .file-button:hover {
+            border-color: #555555;
+            color: #ffffff;
+        }
+
+        .file-button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .file-name {
+            font-size: 13px;
+            color: #666666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
         }
 
         .chat-container::-webkit-scrollbar {
@@ -231,53 +281,113 @@
         }
 
         .chat-container::-webkit-scrollbar-track {
-            background: #0f0a03;
+            background: #000000;
         }
 
         .chat-container::-webkit-scrollbar-thumb {
-            background: #2a2218;
+            background: #333333;
             border-radius: 2px;
         }
 
         .chat-container::-webkit-scrollbar-thumb:hover {
-            background: #3a3228;
+            background: #555555;
         }
 
-        @media (max-width: 360px) {
-            .message {
-                max-width: 90%;
-                padding: 12px 16px;
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px 16px 12px;
             }
             
-            .header h1 {
-                font-size: 1.2rem;
+            .logo {
+                font-size: 1.6rem;
+            }
+            
+            .message {
+                max-width: 85%;
+                padding: 14px 16px;
+            }
+            
+            .input-container {
+                padding: 16px;
+            }
+            
+            .input-wrapper {
+                gap: 10px;
             }
             
             .input-field {
-                padding: 13px 16px;
+                padding: 14px 16px;
+                min-height: 48px;
+            }
+            
+            .send-button {
+                width: 48px;
+                height: 48px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .message {
+                max-width: 90%;
+            }
+            
+            .file-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .file-button {
+                justify-content: center;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .chat-container {
+                padding: 24px 20%;
+            }
+            
+            .input-container {
+                padding: 24px 20%;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>BORK AI</h1>
-        <div class="status-indicator" id="statusIndicator">Проверка подключения...</div>
+        <div class="logo">BORK<span class="logo-accent">AI</span></div>
+        <div class="subtitle">Персональный ассистент для консультантов</div>
     </div>
     
     <div class="chat-container" id="chatContainer">
-        <div class="message ai-message">
-            Привет! Я языковая модель из LM Studio, готовая помочь вам с любыми вопросами. Чем могу быть полезен?
+        <div class="message connection-message" id="connectionMessage">
+            Проверка подключения к BORK AI...
         </div>
     </div>
     
     <div class="input-container">
-        <input type="text" class="input-field" id="userInput" placeholder="Введите ваш запрос..." disabled>
-        <button class="send-button" id="sendButton" disabled>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-            </svg>
-        </button>
+        <div class="file-section">
+            <input type="file" class="file-input" id="fileInput" accept=".pdf,.docx,.txt">
+            <label for="fileInput" class="file-button">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                </svg>
+                Загрузить файл
+            </label>
+            <div class="file-name" id="fileName"></div>
+        </div>
+        <div class="input-wrapper">
+            <textarea class="input-field" id="userInput" placeholder="Ожидание подключения..." disabled rows="1"></textarea>
+            <button class="send-button" id="sendButton" disabled>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <script>
@@ -285,7 +395,19 @@
             const chatContainer = document.getElementById('chatContainer');
             const userInput = document.getElementById('userInput');
             const sendButton = document.getElementById('sendButton');
-            const statusIndicator = document.getElementById('statusIndicator');
+            const fileInput = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            const connectionMessage = document.getElementById('connectionMessage');
+            
+            // Системный промпт для BORK AI
+            const SYSTEM_PROMPT = `Ты - AI-ассистент для персональных консультантов BORK. Твоя задача - помогать консультантам в решении рабочих вопросов. Твое общение соответствует премиальному, дружелюбному тону. В ответах ты не используешь эмодзи. Твои ответы всегда лаконичны.
+            
+Ты умеешь анализировать файлы, которые загружает пользователь в форматах PDF, DOCX и извлекать из них информацию.
+
+Зоны твоей экспертизы:
+1. Продажи бытовой техники и аксессуаров в сегменте премиум/люкс. Ты знаешь основные техники эффективных продаж в сегментах B2C и B2B. Ты умеешь анализировать полный профиль клиента (историю покупок, период активности, средний чек, общий оборот и так далее), и на основе этого анализа ты подбираешь релевантные продукты для клиента.
+2. Прогнозирование времени активности клиента на основе данных о клиенте. Ты умеешь подбирать оптимальное время для контакта с клиентом и оптимальный тип коммуникации.
+3. Прогнозирование показателей выручки бутика или отдельного сотрудника на основе ключевых показателей с использованием модели прогнозирования SARIMA.`;
             
             // Конфигурация подключения к LM Studio
             const LM_STUDIO_CONFIG = {
@@ -295,21 +417,25 @@
                 temperature: 0.7,
                 maxTokens: 1000
             };
-
-            // История сообщений
-            let conversationHistory = [
-                {
-                    role: 'system',
-                    content: 'Ты полезный AI-ассистент BORK AI. Отвечай на русском языке дружелюбно и профессионально.'
-                }
-            ];
-
+            
+            // Переменные для управления состоянием
+            let currentFile = null;
+            let conversationHistory = [];
+            let isConnected = false;
+            
             // Создаем индикатор набора текста
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'typing-indicator';
             typingIndicator.id = 'typingIndicator';
-            typingIndicator.innerHTML = '<span class="typing-dots">ИИ печатает<span>.</span><span>.</span><span>.</span></span>';
-
+            typingIndicator.innerHTML = '<span class="typing-dots">BORK AI печатает<span>.</span><span>.</span><span>.</span></span>';
+            
+            // Автоматическое изменение высоты textarea
+            userInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            // Функции для работы с сообщениями
             function addUserMessage(text) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message user-message';
@@ -325,7 +451,7 @@
                 chatContainer.appendChild(messageDiv);
                 scrollToBottom();
             }
-
+            
             function addErrorMessage(text) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'message error-message';
@@ -333,45 +459,40 @@
                 chatContainer.appendChild(messageDiv);
                 scrollToBottom();
             }
-
-            function addInfoMessage(text) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'message info-message';
-                messageDiv.textContent = text;
-                chatContainer.appendChild(messageDiv);
-                scrollToBottom();
-            }
             
             function scrollToBottom() {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+                setTimeout(() => {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 100);
             }
-
+            
             function showTypingIndicator() {
                 chatContainer.appendChild(typingIndicator);
                 typingIndicator.style.display = 'block';
                 scrollToBottom();
             }
-
+            
             function hideTypingIndicator() {
                 typingIndicator.style.display = 'none';
             }
-
-            function setConnectionStatus(connected, message = '') {
+            
+            function setConnectionStatus(connected) {
+                isConnected = connected;
                 if (connected) {
-                    statusIndicator.textContent = '✓ Подключено к LM Studio';
-                    statusIndicator.className = 'status-indicator status-connected';
                     userInput.disabled = false;
                     sendButton.disabled = false;
-                    userInput.placeholder = 'Введите ваш запрос...';
+                    userInput.placeholder = 'Введите ваш вопрос...';
+                    connectionMessage.textContent = 'Готов к работе.';
+                    connectionMessage.className = 'message connection-message';
                 } else {
-                    statusIndicator.textContent = message || '✗ Не подключено к LM Studio';
-                    statusIndicator.className = 'status-indicator status-disconnected';
                     userInput.disabled = true;
                     sendButton.disabled = true;
                     userInput.placeholder = 'Ожидание подключения...';
+                    connectionMessage.textContent = 'Ошибка подключения. Убедитесь, что LM Studio запущен на 127.0.0.1:1234';
+                    connectionMessage.className = 'message error-message';
                 }
             }
-
+            
             // Проверка подключения к серверу
             async function checkConnection() {
                 try {
@@ -381,31 +502,38 @@
                             'Content-Type': 'application/json',
                         }
                     });
-
+                    
                     if (response.ok) {
-                        setConnectionStatus(true);
-                        return true;
-                    } else {
-                        setConnectionStatus(false, '✗ Сервер недоступен');
-                        return false;
+                        const data = await response.json();
+                        if (data.data && data.data.length > 0) {
+                            setConnectionStatus(true);
+                            return true;
+                        }
                     }
+                    setConnectionStatus(false);
+                    return false;
                 } catch (error) {
-                    setConnectionStatus(false, '✗ Ошибка подключения');
+                    setConnectionStatus(false);
                     return false;
                 }
             }
-
+            
             // Основная функция для получения ответа от AI
             async function getAIResponse(userMessage) {
+                if (!isConnected) {
+                    return 'Ошибка подключения. Пожалуйста, проверьте соединение с BORK AI.';
+                }
+                
                 showTypingIndicator();
-
+                
                 try {
-                    // Добавляем сообщение пользователя в историю
-                    conversationHistory.push({
-                        role: 'user',
-                        content: userMessage
-                    });
-
+                    // Формируем сообщения с системным промптом
+                    const messages = [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        ...conversationHistory,
+                        { role: 'user', content: userMessage }
+                    ];
+                    
                     const response = await fetch(`${LM_STUDIO_CONFIG.baseUrl}${LM_STUDIO_CONFIG.endpoint}`, {
                         method: 'POST',
                         headers: {
@@ -413,75 +541,63 @@
                         },
                         body: JSON.stringify({
                             model: LM_STUDIO_CONFIG.model,
-                            messages: conversationHistory,
+                            messages: messages,
                             temperature: LM_STUDIO_CONFIG.temperature,
                             max_tokens: LM_STUDIO_CONFIG.maxTokens,
                             stream: false
                         })
                     });
-
+                    
                     if (!response.ok) {
-                        throw new Error(`Ошибка сервера: ${response.status} ${response.statusText}`);
+                        throw new Error(`Ошибка сервера: ${response.status}`);
                     }
-
+                    
                     const data = await response.json();
                     
                     if (data.choices && data.choices[0] && data.choices[0].message) {
                         const aiResponse = data.choices[0].message.content;
                         
-                        // Добавляем ответ AI в историю
-                        conversationHistory.push({
-                            role: 'assistant',
-                            content: aiResponse
-                        });
+                        // Сохраняем в историю
+                        conversationHistory.push(
+                            { role: 'user', content: userMessage },
+                            { role: 'assistant', content: aiResponse }
+                        );
+                        
+                        // Ограничиваем историю (последние 20 сообщений)
+                        if (conversationHistory.length > 20) {
+                            conversationHistory = conversationHistory.slice(-20);
+                        }
                         
                         return aiResponse;
                     } else {
                         throw new Error('Неверный формат ответа от сервера');
                     }
-
+                    
                 } catch (error) {
                     console.error('Ошибка при обращении к LM Studio:', error);
-                    
-                    let errorMessage = 'Ошибка соединения с AI. ';
-                    
-                    if (error.message.includes('Failed to fetch')) {
-                        errorMessage += 'Убедитесь, что LM Studio запущен и сервер работает на 127.0.0.1:1234';
-                    } else if (error.message.includes('404')) {
-                        errorMessage += 'Сервер не найден. Проверьте настройки LM Studio';
-                    } else if (error.message.includes('500')) {
-                        errorMessage += 'Внутренняя ошибка сервера. Проверьте логи LM Studio';
-                    } else {
-                        errorMessage += `Техническая информация: ${error.message}`;
-                    }
-                    
-                    return errorMessage;
+                    return 'Ошибка соединения с BORK AI. Пожалуйста, проверьте что LM Studio запущен и модель загружена.';
                 } finally {
                     hideTypingIndicator();
                 }
             }
-
+            
             // Функция отправки сообщения
             async function sendMessage() {
                 const message = userInput.value.trim();
-                if (message) {
+                if (message && isConnected) {
                     // Блокируем интерфейс на время обработки
                     sendButton.disabled = true;
                     userInput.disabled = true;
                     
                     addUserMessage(message);
                     userInput.value = '';
+                    userInput.style.height = 'auto';
                     
                     try {
                         const aiResponse = await getAIResponse(message);
-                        
-                        if (aiResponse.startsWith('Ошибка соединения')) {
-                            addErrorMessage(aiResponse);
-                        } else {
-                            addAiMessage(aiResponse);
-                        }
+                        addAiMessage(aiResponse);
                     } catch (error) {
-                        addErrorMessage(`Произошла непредвиденная ошибка: ${error.message}`);
+                        addErrorMessage('Произошла непредвиденная ошибка при обработке запроса.');
                     } finally {
                         // Разблокируем интерфейс
                         sendButton.disabled = false;
@@ -494,31 +610,38 @@
             // Обработчики событий
             sendButton.addEventListener('click', sendMessage);
             
-            userInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !sendButton.disabled) {
-                    sendMessage();
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendButton.disabled && isConnected) {
+                        sendMessage();
+                    }
                 }
             });
-
+            
+            fileInput.addEventListener('change', function(e) {
+                if (this.files.length > 0) {
+                    currentFile = this.files[0];
+                    fileName.textContent = currentFile.name;
+                    if (isConnected) {
+                        addAiMessage(`Файл "${currentFile.name}" загружен. Теперь вы можете задать вопросы по его содержимому.`);
+                    }
+                }
+            });
+            
             // Периодическая проверка подключения
-            setInterval(checkConnection, 5000);
-
+            setInterval(checkConnection, 3000);
+            
             // Инициализация
             async function initialize() {
-                addInfoMessage('Проверка подключения к LM Studio...');
-                
-                const connected = await checkConnection();
-                
-                if (connected) {
-                    addInfoMessage('Подключение установлено! Можете начинать общение.');
-                    userInput.focus();
-                } else {
-                    addInfoMessage('Ожидание запуска LM Studio...');
-                }
-                
+                await checkConnection();
                 scrollToBottom();
+                
+                if (isConnected) {
+                    userInput.focus();
+                }
             }
-
+            
             // Запускаем инициализацию
             initialize();
         });
