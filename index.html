@@ -14,7 +14,7 @@
 
         body {
             background: #000000;
-            color: #ffffff;
+            color: #e0e0e0;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -26,27 +26,25 @@
             background: #000000;
             padding: 24px 20px 16px;
             text-align: center;
-            border-bottom: 1px solid #1a1a1a;
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: 300;
+            font-size: 1.7rem;
+            font-weight: 400;
             color: #ffffff;
             letter-spacing: -0.5px;
             margin-bottom: 4px;
         }
 
         .logo-accent {
-            font-weight: 400;
+            font-weight: 500;
             color: #ffffff;
         }
 
         .subtitle {
-            font-size: 0.9rem;
-            color: #666666;
+            font-size: 0.85rem;
+            color: #888888;
             font-weight: 300;
-            letter-spacing: 0.5px;
         }
 
         .chat-container {
@@ -60,13 +58,13 @@
         }
 
         .message {
-            max-width: 75%;
+            max-width: 78%;
             padding: 16px 20px;
-            border-radius: 8px;
+            border-radius: 18px;
             line-height: 1.5;
             word-wrap: break-word;
-            font-size: 14px;
-            animation: messageAppear 0.25s ease-out;
+            font-size: 15px;
+            animation: messageAppear 0.2s ease-out;
             position: relative;
         }
 
@@ -85,40 +83,58 @@
             align-self: flex-end;
             background: #1a1a1a;
             color: #ffffff;
-            border: 1px solid #333333;
+            border-bottom-right-radius: 6px;
         }
 
         .ai-message {
             align-self: flex-start;
             background: #0d0d0d;
-            color: #ffffff;
-            border: 1px solid #262626;
+            color: #e0e0e0;
+            border-bottom-left-radius: 6px;
         }
 
         .connection-message {
             align-self: center;
             background: #0d0d0d;
-            color: #666666;
-            border: 1px solid #262626;
+            color: #888888;
             text-align: center;
             font-style: italic;
-            max-width: 85%;
+            max-width: 70%;
+            border-radius: 12px;
+            font-size: 14px;
         }
 
         .error-message {
             align-self: center;
             background: #1a0d0d;
-            color: #cc3333;
-            border: 1px solid #331a1a;
+            color: #ff6b6b;
             text-align: center;
-            max-width: 85%;
+            max-width: 70%;
             font-size: 13px;
+            border-radius: 12px;
         }
 
         .input-container {
             background: #000000;
             padding: 20px 16px;
-            border-top: 1px solid #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        .input-container.centered {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            width: 100%;
+            max-width: 800px;
+            padding: 0 16px;
+        }
+
+        .input-container.bottom {
+            position: relative;
+            transform: none;
+            bottom: auto;
+            left: auto;
         }
 
         .input-wrapper {
@@ -133,14 +149,37 @@
             flex: 1;
             padding: 16px 20px;
             border: 1px solid #333333;
-            border-radius: 8px;
+            border-radius: 24px;
             background: #0d0d0d;
             color: #ffffff;
-            font-size: 14px;
+            font-size: 15px;
             outline: none;
             transition: all 0.2s ease;
             min-height: 52px;
+            max-height: 200px;
             resize: none;
+            line-height: 1.5;
+            overflow-y: auto;
+            /* Исправленный скроллбар */
+            padding-right: 20px;
+        }
+
+        .input-field::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .input-field::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 8px 0;
+        }
+
+        .input-field::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 3px;
+        }
+
+        .input-field::-webkit-scrollbar-thumb:hover {
+            background: #555555;
         }
 
         .input-field:focus {
@@ -157,11 +196,32 @@
             color: #666666;
         }
 
-        .send-button {
+        .file-button {
             background: #1a1a1a;
-            color: #ffffff;
+            color: #888888;
             border: 1px solid #333333;
-            border-radius: 8px;
+            border-radius: 50%;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .file-button:hover {
+            background: #2a2a2a;
+            border-color: #555555;
+            color: #ffffff;
+        }
+
+        .send-button {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
             width: 52px;
             height: 52px;
             display: flex;
@@ -173,8 +233,8 @@
         }
 
         .send-button:hover:not(:disabled) {
-            background: #333333;
-            border-color: #555555;
+            background: #3b82f6;
+            transform: scale(1.05);
         }
 
         .send-button:active:not(:disabled) {
@@ -182,12 +242,13 @@
         }
 
         .send-button:disabled {
-            opacity: 0.3;
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none;
+            background: #1e40af;
         }
 
-        .send-button svg {
+        .file-button svg, .send-button svg {
             width: 20px;
             height: 20px;
         }
@@ -196,21 +257,26 @@
             display: none;
             align-self: flex-start;
             background: #0d0d0d;
-            color: #666666;
+            color: #888888;
             padding: 16px 20px;
-            border-radius: 8px;
-            border: 1px solid #262626;
+            border-radius: 18px;
             font-style: italic;
             font-size: 14px;
+            border-bottom-left-radius: 6px;
         }
 
         .typing-dots {
-            display: inline-block;
+            display: flex;
+            gap: 4px;
+            align-items: center;
         }
 
         .typing-dots span {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #888888;
             animation: typing 1.4s infinite;
-            opacity: 0.6;
         }
 
         .typing-dots span:nth-child(2) {
@@ -223,61 +289,34 @@
 
         @keyframes typing {
             0%, 60%, 100% {
-                opacity: 0.6;
+                opacity: 0.3;
+                transform: translateY(0);
             }
             30% {
                 opacity: 1;
+                transform: translateY(-2px);
             }
-        }
-
-        .file-section {
-            max-width: 800px;
-            margin: 0 auto 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
 
         .file-input {
             display: none;
         }
 
-        .file-button {
-            background: #0d0d0d;
-            color: #666666;
-            border: 1px dashed #333333;
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .file-button:hover {
-            border-color: #555555;
-            color: #ffffff;
-        }
-
-        .file-button svg {
-            width: 16px;
-            height: 16px;
-        }
-
         .file-name {
-            font-size: 13px;
+            font-size: 12px;
             color: #666666;
+            text-align: center;
+            margin-top: 8px;
+            max-width: 800px;
+            margin: 8px auto 0;
+            padding: 0 16px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            flex: 1;
         }
 
         .chat-container::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .chat-container::-webkit-scrollbar-track {
@@ -286,29 +325,34 @@
 
         .chat-container::-webkit-scrollbar-thumb {
             background: #333333;
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         .chat-container::-webkit-scrollbar-thumb:hover {
             background: #555555;
         }
 
+        /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
             .header {
                 padding: 20px 16px 12px;
             }
             
             .logo {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
             }
             
             .message {
                 max-width: 85%;
-                padding: 14px 16px;
+                padding: 14px 18px;
             }
             
             .input-container {
                 padding: 16px;
+            }
+            
+            .input-container.centered {
+                padding: 0 16px;
             }
             
             .input-wrapper {
@@ -318,37 +362,108 @@
             .input-field {
                 padding: 14px 16px;
                 min-height: 48px;
+                font-size: 14px;
+                max-height: 180px;
             }
             
-            .send-button {
+            .file-button, .send-button {
                 width: 48px;
                 height: 48px;
+            }
+            
+            .file-button svg, .send-button svg {
+                width: 18px;
+                height: 18px;
             }
         }
 
         @media (max-width: 480px) {
+            .header {
+                padding: 16px 12px 10px;
+            }
+            
+            .logo {
+                font-size: 1.3rem;
+            }
+            
+            .subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .chat-container {
+                padding: 16px 12px;
+            }
+            
             .message {
                 max-width: 90%;
+                padding: 12px 16px;
+                font-size: 14px;
             }
             
-            .file-section {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
+            .input-container {
+                padding: 14px 12px;
             }
             
-            .file-button {
-                justify-content: center;
+            .input-container.centered {
+                padding: 0 12px;
+            }
+            
+            .input-field {
+                padding: 12px 14px;
+                min-height: 44px;
+                font-size: 14px;
+                max-height: 160px;
+            }
+            
+            .file-button, .send-button {
+                width: 44px;
+                height: 44px;
+            }
+            
+            .file-button svg, .send-button svg {
+                width: 16px;
+                height: 16px;
             }
         }
 
-        @media (min-width: 1200px) {
+        /* Для планшетов */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .message {
+                max-width: 75%;
+            }
+            
+            .input-wrapper {
+                max-width: 90%;
+            }
+        }
+
+        /* Для больших экранов */
+        @media (min-width: 1025px) {
             .chat-container {
                 padding: 24px 20%;
             }
             
             .input-container {
                 padding: 24px 20%;
+            }
+            
+            .input-container.centered {
+                max-width: 60%;
+            }
+        }
+
+        /* Для очень больших экранов */
+        @media (min-width: 1440px) {
+            .chat-container {
+                padding: 24px 25%;
+            }
+            
+            .input-container {
+                padding: 24px 25%;
+            }
+            
+            .input-container.centered {
+                max-width: 50%;
             }
         }
     </style>
@@ -361,14 +476,13 @@
     
     <div class="chat-container" id="chatContainer">
         <div class="message connection-message" id="connectionMessage">
-            Проверка подключения к BORK AI...
+            New Chat
         </div>
     </div>
     
-    <div class="input-container">
-        <div class="file-section">
-            <input type="file" class="file-input" id="fileInput" accept=".pdf,.docx,.txt">
-            <label for="fileInput" class="file-button">
+    <div class="input-container centered" id="inputContainer">
+        <div class="input-wrapper">
+            <button class="file-button" id="fileButton">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14,2 14,8 20,8"></polyline>
@@ -376,11 +490,8 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10,9 9,9 8,9"></polyline>
                 </svg>
-                Загрузить файл
-            </label>
-            <div class="file-name" id="fileName"></div>
-        </div>
-        <div class="input-wrapper">
+            </button>
+            <input type="file" class="file-input" id="fileInput" accept=".pdf,.docx,.txt">
             <textarea class="input-field" id="userInput" placeholder="Ожидание подключения..." disabled rows="1"></textarea>
             <button class="send-button" id="sendButton" disabled>
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -388,6 +499,7 @@
                 </svg>
             </button>
         </div>
+        <div class="file-name" id="fileName"></div>
     </div>
 
     <script>
@@ -396,8 +508,10 @@
             const userInput = document.getElementById('userInput');
             const sendButton = document.getElementById('sendButton');
             const fileInput = document.getElementById('fileInput');
+            const fileButton = document.getElementById('fileButton');
             const fileName = document.getElementById('fileName');
             const connectionMessage = document.getElementById('connectionMessage');
+            const inputContainer = document.getElementById('inputContainer');
             
             // Системный промпт для BORK AI
             const SYSTEM_PROMPT = `Ты - AI-ассистент для персональных консультантов BORK. Твоя задача - помогать консультантам в решении рабочих вопросов. Твое общение соответствует премиальному, дружелюбному тону. В ответах ты не используешь эмодзи. Твои ответы всегда лаконичны.
@@ -422,17 +536,45 @@
             let currentFile = null;
             let conversationHistory = [];
             let isConnected = false;
+            let isFirstMessage = true;
             
             // Создаем индикатор набора текста
             const typingIndicator = document.createElement('div');
             typingIndicator.className = 'typing-indicator';
             typingIndicator.id = 'typingIndicator';
-            typingIndicator.innerHTML = '<span class="typing-dots">BORK AI печатает<span>.</span><span>.</span><span>.</span></span>';
+            typingIndicator.innerHTML = '<div class="typing-dots">BORK AI печатает <span></span><span></span><span></span></div>';
             
-            // Автоматическое изменение высоты textarea
+            // Функция для перемещения поля ввода вниз
+            function moveInputToBottom() {
+                inputContainer.classList.remove('centered');
+                inputContainer.classList.add('bottom');
+            }
+            
+            // Функция для скрытия надписи "New Chat"
+            function hideNewChatMessage() {
+                if (connectionMessage && connectionMessage.textContent === 'New Chat') {
+                    connectionMessage.style.display = 'none';
+                }
+            }
+            
+            // Автоматическое изменение высоты textarea с ограничением в 10 строк
             userInput.addEventListener('input', function() {
+                // Сбрасываем высоту
                 this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+                
+                // Вычисляем высоту контента
+                const contentHeight = this.scrollHeight;
+                const lineHeight = parseInt(getComputedStyle(this).lineHeight);
+                const maxHeight = lineHeight * 10; // Максимум 10 строк
+                
+                // Устанавливаем высоту с ограничением
+                if (contentHeight <= maxHeight) {
+                    this.style.height = contentHeight + 'px';
+                    this.style.overflowY = 'hidden';
+                } else {
+                    this.style.height = maxHeight + 'px';
+                    this.style.overflowY = 'auto';
+                }
             });
             
             // Функции для работы с сообщениями
@@ -441,6 +583,14 @@
                 messageDiv.className = 'message user-message';
                 messageDiv.textContent = text;
                 chatContainer.appendChild(messageDiv);
+                
+                // При первом сообщении перемещаем поле ввода вниз и скрываем "New Chat"
+                if (isFirstMessage) {
+                    isFirstMessage = false;
+                    moveInputToBottom();
+                    hideNewChatMessage();
+                }
+                
                 scrollToBottom();
             }
             
@@ -481,15 +631,19 @@
                 if (connected) {
                     userInput.disabled = false;
                     sendButton.disabled = false;
-                    userInput.placeholder = 'Введите ваш вопрос...';
-                    connectionMessage.textContent = 'Готов к работе.';
-                    connectionMessage.className = 'message connection-message';
+                    userInput.placeholder = 'Message BORK AI';
+                    if (isFirstMessage) {
+                        connectionMessage.textContent = 'New Chat';
+                        connectionMessage.className = 'message connection-message';
+                        connectionMessage.style.display = 'block';
+                    }
                 } else {
                     userInput.disabled = true;
                     sendButton.disabled = true;
                     userInput.placeholder = 'Ожидание подключения...';
                     connectionMessage.textContent = 'Ошибка подключения. Убедитесь, что LM Studio запущен на 127.0.0.1:1234';
                     connectionMessage.className = 'message error-message';
+                    connectionMessage.style.display = 'block';
                 }
             }
             
@@ -592,6 +746,7 @@
                     addUserMessage(message);
                     userInput.value = '';
                     userInput.style.height = 'auto';
+                    userInput.style.overflowY = 'hidden';
                     
                     try {
                         const aiResponse = await getAIResponse(message);
@@ -619,10 +774,14 @@
                 }
             });
             
+            fileButton.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
             fileInput.addEventListener('change', function(e) {
                 if (this.files.length > 0) {
                     currentFile = this.files[0];
-                    fileName.textContent = currentFile.name;
+                    fileName.textContent = `Файл: ${currentFile.name}`;
                     if (isConnected) {
                         addAiMessage(`Файл "${currentFile.name}" загружен. Теперь вы можете задать вопросы по его содержимому.`);
                     }
