@@ -26,6 +26,7 @@
             background: #000000;
             padding: 24px 20px 16px;
             text-align: center;
+            position: relative;
         }
 
         .logo {
@@ -45,6 +46,39 @@
             font-size: 0.85rem;
             color: #888888;
             font-weight: 300;
+        }
+
+        .provider-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .provider-selector select {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-connected {
+            background: #00ff88;
+        }
+
+        .status-disconnected {
+            background: #ff4444;
         }
 
         .chat-container {
@@ -160,8 +194,7 @@
             resize: none;
             line-height: 1.5;
             overflow-y: auto;
-            /* Исправленный скроллбар */
-            padding-right: 20px;
+            padding-right: 28px;
         }
 
         .input-field::-webkit-scrollbar {
@@ -176,6 +209,7 @@
         .input-field::-webkit-scrollbar-thumb {
             background: #333333;
             border-radius: 3px;
+            margin-right: 4px;
         }
 
         .input-field::-webkit-scrollbar-thumb:hover {
@@ -342,6 +376,16 @@
                 font-size: 1.5rem;
             }
             
+            .provider-selector {
+                top: 15px;
+                right: 15px;
+            }
+            
+            .provider-selector select {
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+            
             .message {
                 max-width: 85%;
                 padding: 14px 18px;
@@ -364,6 +408,7 @@
                 min-height: 48px;
                 font-size: 14px;
                 max-height: 180px;
+                padding-right: 24px;
             }
             
             .file-button, .send-button {
@@ -390,6 +435,14 @@
                 font-size: 0.8rem;
             }
             
+            .provider-selector {
+                position: relative;
+                top: auto;
+                right: auto;
+                justify-content: center;
+                margin-top: 8px;
+            }
+            
             .chat-container {
                 padding: 16px 12px;
             }
@@ -413,6 +466,7 @@
                 min-height: 44px;
                 font-size: 14px;
                 max-height: 160px;
+                padding-right: 20px;
             }
             
             .file-button, .send-button {
@@ -472,6 +526,13 @@
     <div class="header">
         <div class="logo">BORK<span class="logo-accent">AI</span></div>
         <div class="subtitle">Персональный ассистент для консультантов</div>
+        <div class="provider-selector">
+            <select id="aiProviderSelect">
+                <option value="lmstudio">LM Studio (Локальный)</option>
+                <option value="groq">Groq (Облачный)</option>
+            </select>
+            <div class="status-indicator" id="providerStatus"></div>
+        </div>
     </div>
     
     <div class="chat-container" id="chatContainer">
@@ -512,6 +573,27 @@
             const fileName = document.getElementById('fileName');
             const connectionMessage = document.getElementById('connectionMessage');
             const inputContainer = document.getElementById('inputContainer');
+            const providerSelect = document.getElementById('aiProviderSelect');
+            const providerStatus = document.getElementById('providerStatus');
+            
+            // Конфигурация AI провайдеров
+            const AI_CONFIG = {
+                provider: 'lmstudio', // По умолчанию LM Studio
+                
+                // Настройки Groq
+                groq: {
+                    apiKey: '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', // ЗАМЕНИТЕ на ваш ключ Groq
+                    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+                    model: 'llama-3.1-8b-instant' // или 'mixtral-8x7b-32768', 'llama3-70b-8192'
+                },
+                
+                // Настройки LM Studio
+                lmstudio: {
+                    baseUrl: 'http://127.0.0.1:1234',
+                    endpoint: '/v1/chat/completions',
+                    model: 'local-model'
+                }
+            };
             
             // Системный промпт для BORK AI
             const SYSTEM_PROMPT = `Ты - AI-ассистент для персональных консультантов BORK. Твоя задача - помогать консультантам в решении рабочих вопросов. Твое общение соответствует премиальному, дружелюбному тону. В ответах ты не используешь эмодзи. Твои ответы всегда лаконичны.
@@ -522,15 +604,6 @@
 1. Продажи бытовой техники и аксессуаров в сегменте премиум/люкс. Ты знаешь основные техники эффективных продаж в сегментах B2C и B2B. Ты умеешь анализировать полный профиль клиента (историю покупок, период активности, средний чек, общий оборот и так далее), и на основе этого анализа ты подбираешь релевантные продукты для клиента.
 2. Прогнозирование времени активности клиента на основе данных о клиенте. Ты умеешь подбирать оптимальное время для контакта с клиентом и оптимальный тип коммуникации.
 3. Прогнозирование показателей выручки бутика или отдельного сотрудника на основе ключевых показателей с использованием модели прогнозирования SARIMA.`;
-            
-            // Конфигурация подключения к LM Studio
-            const LM_STUDIO_CONFIG = {
-                baseUrl: 'http://127.0.0.1:1234',
-                endpoint: '/v1/chat/completions',
-                model: 'local-model',
-                temperature: 0.7,
-                maxTokens: 1000
-            };
             
             // Переменные для управления состоянием
             let currentFile = null;
@@ -543,6 +616,103 @@
             typingIndicator.className = 'typing-indicator';
             typingIndicator.id = 'typingIndicator';
             typingIndicator.innerHTML = '<div class="typing-dots">BORK AI печатает <span></span><span></span><span></span></div>';
+            
+            // Класс для работы с AI провайдерами
+            class AIProvider {
+                constructor(config) {
+                    this.config = config;
+                }
+                
+                async sendMessage(messages, temperature = 0.7) {
+                    if (this.config.provider === 'groq') {
+                        return await this.sendToGroq(messages, temperature);
+                    } else {
+                        return await this.sendToLMStudio(messages, temperature);
+                    }
+                }
+                
+                async sendToGroq(messages, temperature) {
+                    try {
+                        const response = await fetch(this.config.groq.endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.config.groq.apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: this.config.groq.model,
+                                messages: messages,
+                                temperature: temperature,
+                                max_tokens: 1000,
+                                stream: false
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Groq API: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                        }
+                        
+                        const data = await response.json();
+                        return data.choices[0].message.content;
+                        
+                    } catch (error) {
+                        console.error('Groq API error:', error);
+                        throw new Error(`Groq API: ${error.message}`);
+                    }
+                }
+                
+                async sendToLMStudio(messages, temperature) {
+                    try {
+                        const response = await fetch(
+                            `${this.config.lmstudio.baseUrl}${this.config.lmstudio.endpoint}`, 
+                            {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    model: this.config.lmstudio.model,
+                                    messages: messages,
+                                    temperature: temperature,
+                                    max_tokens: 1000,
+                                    stream: false
+                                })
+                            }
+                        );
+                        
+                        if (!response.ok) {
+                            throw new Error(`LM Studio: ${response.status}`);
+                        }
+                        
+                        const data = await response.json();
+                        return data.choices[0].message.content;
+                        
+                    } catch (error) {
+                        console.error('LM Studio error:', error);
+                        throw new Error(`LM Studio: ${error.message}`);
+                    }
+                }
+                
+                async testConnection() {
+                    if (this.config.provider === 'groq') {
+                        // Для Groq проверяем наличие API ключа
+                        return this.config.groq.apiKey && this.config.groq.apiKey !== 'YOUR_GROQ_API_KEY';
+                    } else {
+                        // Для LM Studio проверяем доступность сервера
+                        try {
+                            const response = await fetch(`${this.config.lmstudio.baseUrl}/v1/models`, {
+                                method: 'GET',
+                                headers: {'Content-Type': 'application/json'}
+                            });
+                            return response.ok;
+                        } catch {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            // Создаем экземпляр провайдера
+            const aiProvider = new AIProvider(AI_CONFIG);
             
             // Функция для перемещения поля ввода вниз
             function moveInputToBottom() {
@@ -559,15 +729,11 @@
             
             // Автоматическое изменение высоты textarea с ограничением в 10 строк
             userInput.addEventListener('input', function() {
-                // Сбрасываем высоту
                 this.style.height = 'auto';
-                
-                // Вычисляем высоту контента
                 const contentHeight = this.scrollHeight;
                 const lineHeight = parseInt(getComputedStyle(this).lineHeight);
-                const maxHeight = lineHeight * 10; // Максимум 10 строк
+                const maxHeight = lineHeight * 10;
                 
-                // Устанавливаем высоту с ограничением
                 if (contentHeight <= maxHeight) {
                     this.style.height = contentHeight + 'px';
                     this.style.overflowY = 'hidden';
@@ -584,7 +750,6 @@
                 messageDiv.textContent = text;
                 chatContainer.appendChild(messageDiv);
                 
-                // При первом сообщении перемещаем поле ввода вниз и скрываем "New Chat"
                 if (isFirstMessage) {
                     isFirstMessage = false;
                     moveInputToBottom();
@@ -632,6 +797,8 @@
                     userInput.disabled = false;
                     sendButton.disabled = false;
                     userInput.placeholder = 'Message BORK AI';
+                    providerStatus.className = 'status-indicator status-connected';
+                    
                     if (isFirstMessage) {
                         connectionMessage.textContent = 'New Chat';
                         connectionMessage.className = 'message connection-message';
@@ -641,7 +808,13 @@
                     userInput.disabled = true;
                     sendButton.disabled = true;
                     userInput.placeholder = 'Ожидание подключения...';
-                    connectionMessage.textContent = 'Ошибка подключения. Убедитесь, что LM Studio запущен на 127.0.0.1:1234';
+                    providerStatus.className = 'status-indicator status-disconnected';
+                    
+                    if (AI_CONFIG.provider === 'groq') {
+                        connectionMessage.textContent = 'Groq: Проверьте API ключ';
+                    } else {
+                        connectionMessage.textContent = 'LM Studio: Убедитесь, что сервер запущен на 127.0.0.1:1234';
+                    }
                     connectionMessage.className = 'message error-message';
                     connectionMessage.style.display = 'block';
                 }
@@ -650,22 +823,9 @@
             // Проверка подключения к серверу
             async function checkConnection() {
                 try {
-                    const response = await fetch(`${LM_STUDIO_CONFIG.baseUrl}/v1/models`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.data && data.data.length > 0) {
-                            setConnectionStatus(true);
-                            return true;
-                        }
-                    }
-                    setConnectionStatus(false);
-                    return false;
+                    const connected = await aiProvider.testConnection();
+                    setConnectionStatus(connected);
+                    return connected;
                 } catch (error) {
                     setConnectionStatus(false);
                     return false;
@@ -675,7 +835,7 @@
             // Основная функция для получения ответа от AI
             async function getAIResponse(userMessage) {
                 if (!isConnected) {
-                    return 'Ошибка подключения. Пожалуйста, проверьте соединение с BORK AI.';
+                    return 'Ошибка подключения. Пожалуйста, проверьте настройки подключения.';
                 }
                 
                 showTypingIndicator();
@@ -688,48 +848,24 @@
                         { role: 'user', content: userMessage }
                     ];
                     
-                    const response = await fetch(`${LM_STUDIO_CONFIG.baseUrl}${LM_STUDIO_CONFIG.endpoint}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            model: LM_STUDIO_CONFIG.model,
-                            messages: messages,
-                            temperature: LM_STUDIO_CONFIG.temperature,
-                            max_tokens: LM_STUDIO_CONFIG.maxTokens,
-                            stream: false
-                        })
-                    });
+                    const response = await aiProvider.sendMessage(messages);
                     
-                    if (!response.ok) {
-                        throw new Error(`Ошибка сервера: ${response.status}`);
+                    // Сохраняем в историю
+                    conversationHistory.push(
+                        { role: 'user', content: userMessage },
+                        { role: 'assistant', content: response }
+                    );
+                    
+                    // Ограничиваем историю (последние 20 сообщений)
+                    if (conversationHistory.length > 20) {
+                        conversationHistory = conversationHistory.slice(-20);
                     }
                     
-                    const data = await response.json();
-                    
-                    if (data.choices && data.choices[0] && data.choices[0].message) {
-                        const aiResponse = data.choices[0].message.content;
-                        
-                        // Сохраняем в историю
-                        conversationHistory.push(
-                            { role: 'user', content: userMessage },
-                            { role: 'assistant', content: aiResponse }
-                        );
-                        
-                        // Ограничиваем историю (последние 20 сообщений)
-                        if (conversationHistory.length > 20) {
-                            conversationHistory = conversationHistory.slice(-20);
-                        }
-                        
-                        return aiResponse;
-                    } else {
-                        throw new Error('Неверный формат ответа от сервера');
-                    }
+                    return response;
                     
                 } catch (error) {
-                    console.error('Ошибка при обращении к LM Studio:', error);
-                    return 'Ошибка соединения с BORK AI. Пожалуйста, проверьте что LM Studio запущен и модель загружена.';
+                    console.error('Ошибка при обращении к AI:', error);
+                    return `Ошибка: ${error.message}`;
                 } finally {
                     hideTypingIndicator();
                 }
@@ -788,8 +924,14 @@
                 }
             });
             
+            // Обработчик смены провайдера
+            providerSelect.addEventListener('change', function(e) {
+                AI_CONFIG.provider = e.target.value;
+                checkConnection();
+            });
+            
             // Периодическая проверка подключения
-            setInterval(checkConnection, 3000);
+            setInterval(checkConnection, 5000);
             
             // Инициализация
             async function initialize() {
@@ -807,3 +949,4 @@
     </script>
 </body>
 </html>
+
