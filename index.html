@@ -664,7 +664,7 @@
                 2. Перейдите в <a href="https://console.groq.com/keys" target="_blank" style="color: #2563eb;">Console → API Keys</a><br>
                 3. Создайте новый API ключ<br>
                 4. Скопируйте и вставьте ниже<br><br>
-                <strong>⚠️ Безопасность:</strong> Ключ не сохраняется и используется только для текущей сессии.
+                <strong>⚠️ Безопасность:</strong> Ключ сохраняется только на время сессии.
             </div>
             <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Введите ваш Groq API ключ...">
             <div class="api-key-buttons">
@@ -776,17 +776,57 @@
             typingIndicator.id = 'typingIndicator';
             typingIndicator.innerHTML = '<div class="typing-dots">BORK AI печатает <span></span><span></span><span></span></div>';
             
+            // Функция для получения сохраненного API ключа
+            function getSavedApiKey() {
+                try {
+                    // Пробуем получить из sessionStorage (сохраняется на время сессии)
+                    return sessionStorage.getItem('groq_api_key');
+                } catch (error) {
+                    console.log('Не удалось получить сохраненный ключ:', error);
+                    return null;
+                }
+            }
+            
+            // Функция для сохранения API ключа
+            function saveApiKeyToStorage(apiKey) {
+                try {
+                    sessionStorage.setItem('groq_api_key', apiKey);
+                } catch (error) {
+                    console.log('Не удалось сохранить ключ:', error);
+                }
+            }
+            
+            // Функция для удаления API ключа
+            function removeApiKeyFromStorage() {
+                try {
+                    sessionStorage.removeItem('groq_api_key');
+                } catch (error) {
+                    console.log('Не удалось удалить ключ:', error);
+                }
+            }
+            
+            // Проверяем есть ли сохраненный ключ при загрузке
+            function checkSavedApiKey() {
+                const savedKey = getSavedApiKey();
+                if (savedKey) {
+                    AI_CONFIG.groq.apiKey = savedKey;
+                    return true;
+                }
+                return false;
+            }
+            
             // Показываем модальное окно при загрузке
             function showApiKeyModal() {
                 apiKeyModal.style.display = 'flex';
                 apiKeyInput.focus();
             }
             
-            // Сохраняем API ключ (только в памяти)
+            // Сохраняем API ключ
             function saveApiKey() {
                 const apiKey = apiKeyInput.value.trim();
                 if (apiKey) {
                     AI_CONFIG.groq.apiKey = apiKey;
+                    saveApiKeyToStorage(apiKey); // Сохраняем в sessionStorage
                     apiKeyModal.style.display = 'none';
                     apiKeyInput.value = '';
                     initializeConnection();
@@ -807,6 +847,7 @@
                 } else {
                     connectionMessage.textContent = 'Неверный API ключ или проблемы с сетью. Попробуйте снова.';
                     connectionMessage.className = 'message error-message';
+                    removeApiKeyFromStorage(); // Удаляем невалидный ключ
                     showApiKeyModal();
                 }
             }
@@ -857,6 +898,12 @@
                             } catch (e) {
                                 // Если не удалось распарсить JSON ошибки
                             }
+                            
+                            // Если ошибка авторизации, удаляем сохраненный ключ
+                            if (response.status === 401) {
+                                removeApiKeyFromStorage();
+                            }
+                            
                             throw new Error(`Groq API: ${errorMessage}`);
                         }
                         
@@ -1095,6 +1142,11 @@
                     
                 } catch (error) {
                     console.error('Ошибка при обращении к AI:', error);
+                    // Если ошибка авторизации, сбрасываем ключ
+                    if (error.message.includes('401') || error.message.includes('authorization')) {
+                        removeApiKeyFromStorage();
+                        AI_CONFIG.groq.apiKey = '';
+                    }
                     return `Ошибка: ${error.message}`;
                 } finally {
                     hideTypingIndicator();
@@ -1126,8 +1178,14 @@
                 }
             }
             
+            // Обработчик смены API ключа
+            changeApiKeyButton.addEventListener('click', function() {
+                removeApiKeyFromStorage();
+                AI_CONFIG.groq.apiKey = '';
+                showApiKeyModal();
+            });
+            
             // Обработчики событий
-            changeApiKeyButton.addEventListener('click', showApiKeyModal);
             saveApiKeyBtn.addEventListener('click', saveApiKey);
             cancelApiKeyBtn.addEventListener('click', function() {
                 apiKeyModal.style.display = 'none';
@@ -1176,8 +1234,17 @@
             
             // Инициализация
             function initialize() {
-                setConnectionStatus(false);
-                showApiKeyModal();
+                // Проверяем есть ли сохраненный ключ
+                const hasSavedKey = checkSavedApiKey();
+                
+                if (hasSavedKey) {
+                    // Если есть сохраненный ключ, пробуем подключиться
+                    initializeConnection();
+                } else {
+                    // Если нет сохраненного ключа, показываем модальное окно
+                    setConnectionStatus(false);
+                    showApiKeyModal();
+                }
                 scrollToBottom();
             }
             
@@ -1186,5 +1253,4 @@
         });
     </script>
 </body>
-
-
+</html>
