@@ -113,6 +113,93 @@
             height: 16px;
         }
 
+        .api-key-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .api-key-modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #333;
+        }
+
+        .api-key-modal h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .api-key-instructions {
+            background: #0d0d0d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .api-key-input {
+            width: 100%;
+            padding: 12px;
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        .api-key-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .api-key-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .api-key-btn.primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .api-key-btn.primary:hover {
+            background: #3b82f6;
+        }
+
+        .api-key-btn.secondary {
+            background: #333;
+            color: #888;
+        }
+
+        .api-key-btn.secondary:hover {
+            background: #444;
+            color: white;
+        }
+
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -567,6 +654,26 @@
     </style>
 </head>
 <body>
+    <!-- Модальное окно для ввода API ключа -->
+    <div class="api-key-modal" id="apiKeyModal">
+        <div class="api-key-modal-content">
+            <h3>Введите Groq API ключ</h3>
+            <div class="api-key-instructions">
+                <strong>Как получить ключ:</strong><br>
+                1. Зарегистрируйтесь на <a href="https://groq.com" target="_blank" style="color: #2563eb;">groq.com</a><br>
+                2. Перейдите в <a href="https://console.groq.com/keys" target="_blank" style="color: #2563eb;">Console → API Keys</a><br>
+                3. Создайте новый API ключ<br>
+                4. Скопируйте и вставьте ниже<br><br>
+                <strong>⚠️ Безопасность:</strong> Ключ не сохраняется и используется только для текущей сессии.
+            </div>
+            <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Введите ваш Groq API ключ...">
+            <div class="api-key-buttons">
+                <button class="api-key-btn secondary" id="cancelApiKey">Отмена</button>
+                <button class="api-key-btn primary" id="saveApiKey">Подключиться</button>
+            </div>
+        </div>
+    </div>
+
     <div class="header">
         <div class="logo">BORK<span class="logo-accent">AI</span></div>
         <div class="subtitle">Персональный ассистент для консультантов</div>
@@ -588,13 +695,13 @@
     
     <div class="chat-container" id="chatContainer">
         <div class="message connection-message" id="connectionMessage">
-            New Chat
+            Для начала работы введите API ключ
         </div>
     </div>
     
     <div class="input-container centered" id="inputContainer">
         <div class="input-wrapper">
-            <button class="file-button" id="fileButton">
+            <button class="file-button" id="fileButton" disabled>
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14,2 14,8 20,8"></polyline>
@@ -603,8 +710,8 @@
                     <polyline points="10,9 9,9 8,9"></polyline>
                 </svg>
             </button>
-            <input type="file" class="file-input" id="fileInput" accept=".pdf,.docx,.txt">
-            <textarea class="input-field" id="userInput" placeholder="Ожидание подключения..." disabled rows="1"></textarea>
+            <input type="file" class="file-input" id="fileInput" accept=".pdf,.docx,.txt" disabled>
+            <textarea class="input-field" id="userInput" placeholder="Введите API ключ для начала работы..." disabled rows="1"></textarea>
             <button class="send-button" id="sendButton" disabled>
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
@@ -627,19 +734,19 @@
             const providerSelect = document.getElementById('aiProviderSelect');
             const providerStatus = document.getElementById('providerStatus');
             const changeApiKeyButton = document.getElementById('changeApiKey');
+            const apiKeyModal = document.getElementById('apiKeyModal');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const saveApiKeyBtn = document.getElementById('saveApiKey');
+            const cancelApiKeyBtn = document.getElementById('cancelApiKey');
             
             // Конфигурация AI провайдеров
             let AI_CONFIG = {
-                provider: 'lmstudio', // По умолчанию LM Studio
-                
-                // Настройки Groq
+                provider: 'lmstudio',
                 groq: {
-                    apiKey: '', // Будет заполнено из localStorage
+                    apiKey: '',
                     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
                     model: 'llama-3.1-8b-instant'
                 },
-                
-                // Настройки LM Studio
                 lmstudio: {
                     baseUrl: 'http://127.0.0.1:1234',
                     endpoint: '/v1/chat/completions',
@@ -669,45 +776,38 @@
             typingIndicator.id = 'typingIndicator';
             typingIndicator.innerHTML = '<div class="typing-dots">BORK AI печатает <span></span><span></span><span></span></div>';
             
-            // Функция для получения API ключа
-            function getApiKey() {
-                // Пробуем получить из localStorage
-                let savedKey = localStorage.getItem('groq_api_key');
-                
-                if (savedKey) {
-                    return savedKey;
-                }
-                
-                // Если нет в localStorage, запрашиваем у пользователя
-                let apiKey = prompt(`Для использования Groq AI введите ваш API ключ:
-
-🔐 Как получить ключ:
-1. Зарегистрируйтесь на groq.com
-2. Перейдите в Console → API Keys
-3. Создайте новый ключ
-4. Скопируйте и вставьте сюда
-
-Ваш ключ сохранится локально в браузере и никуда не передается.`);
-
-                if (apiKey && apiKey.trim()) {
-                    // Сохраняем в localStorage
-                    localStorage.setItem('groq_api_key', apiKey.trim());
-                    return apiKey.trim();
-                }
-                
-                return null;
+            // Показываем модальное окно при загрузке
+            function showApiKeyModal() {
+                apiKeyModal.style.display = 'flex';
+                apiKeyInput.focus();
             }
-
-            // Инициализация API ключа
-            function initializeApiKey() {
-                const apiKey = getApiKey();
+            
+            // Сохраняем API ключ (только в памяти)
+            function saveApiKey() {
+                const apiKey = apiKeyInput.value.trim();
                 if (apiKey) {
                     AI_CONFIG.groq.apiKey = apiKey;
-                    console.log('API ключ загружен');
-                    return true;
+                    apiKeyModal.style.display = 'none';
+                    apiKeyInput.value = '';
+                    initializeConnection();
+                }
+            }
+            
+            // Инициализация подключения после ввода ключа
+            async function initializeConnection() {
+                connectionMessage.textContent = 'Проверка подключения...';
+                connectionMessage.className = 'message connection-message';
+                
+                const connected = await checkConnection();
+                if (connected) {
+                    setConnectionStatus(true);
+                    userInput.placeholder = 'Message BORK AI...';
+                    connectionMessage.textContent = 'New Chat';
+                    userInput.focus();
                 } else {
-                    console.log('API ключ не введен');
-                    return false;
+                    connectionMessage.textContent = 'Неверный API ключ или проблемы с сетью. Попробуйте снова.';
+                    connectionMessage.className = 'message error-message';
+                    showApiKeyModal();
                 }
             }
             
@@ -727,6 +827,10 @@
                 
                 async sendToGroq(messages, temperature) {
                     try {
+                        // Улучшенный запрос для мобильных устройств
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
+                        
                         const response = await fetch(this.config.groq.endpoint, {
                             method: 'POST',
                             headers: {
@@ -739,12 +843,21 @@
                                 temperature: temperature,
                                 max_tokens: 1000,
                                 stream: false
-                            })
+                            }),
+                            signal: controller.signal
                         });
                         
+                        clearTimeout(timeoutId);
+                        
                         if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(`Groq API: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                            let errorMessage = `Ошибка ${response.status}`;
+                            try {
+                                const errorData = await response.json();
+                                errorMessage = errorData.error?.message || errorMessage;
+                            } catch (e) {
+                                // Если не удалось распарсить JSON ошибки
+                            }
+                            throw new Error(`Groq API: ${errorMessage}`);
                         }
                         
                         const data = await response.json();
@@ -752,6 +865,9 @@
                         
                     } catch (error) {
                         console.error('Groq API error:', error);
+                        if (error.name === 'AbortError') {
+                            throw new Error('Превышено время ожидания ответа. Проверьте подключение к интернету.');
+                        }
                         throw new Error(`Groq API: ${error.message}`);
                     }
                 }
@@ -788,13 +904,15 @@
                 
                 async testConnection() {
                     if (this.config.provider === 'groq') {
-                        // Для Groq проверяем наличие API ключа и его валидность
                         if (!this.config.groq.apiKey) {
                             return false;
                         }
                         
-                        // Пробуем сделать тестовый запрос для проверки ключа
                         try {
+                            // Упрощенная проверка для мобильных
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 10000);
+                            
                             const response = await fetch(this.config.groq.endpoint, {
                                 method: 'POST',
                                 headers: {
@@ -803,18 +921,20 @@
                                 },
                                 body: JSON.stringify({
                                     model: this.config.groq.model,
-                                    messages: [{ role: 'user', content: 'Hello' }],
-                                    max_tokens: 5
-                                })
+                                    messages: [{ role: 'user', content: 'test' }],
+                                    max_tokens: 1
+                                }),
+                                signal: controller.signal
                             });
                             
+                            clearTimeout(timeoutId);
                             return response.ok;
+                            
                         } catch (error) {
-                            console.error('Connection test failed:', error);
+                            console.error('Mobile connection test failed:', error);
                             return false;
                         }
                     } else {
-                        // Для LM Studio проверяем доступность сервера
                         try {
                             const response = await fetch(`${this.config.lmstudio.baseUrl}/v1/models`, {
                                 method: 'GET',
@@ -844,7 +964,7 @@
                 }
             }
             
-            // Автоматическое изменение высоты textarea с ограничением в 10 строк
+            // Автоматическое изменение высоты textarea
             userInput.addEventListener('input', function() {
                 this.style.height = 'auto';
                 const contentHeight = this.scrollHeight;
@@ -913,6 +1033,8 @@
                 if (connected) {
                     userInput.disabled = false;
                     sendButton.disabled = false;
+                    fileButton.disabled = false;
+                    fileInput.disabled = false;
                     userInput.placeholder = 'Message BORK AI';
                     providerStatus.className = 'status-indicator status-connected';
                     
@@ -924,16 +1046,10 @@
                 } else {
                     userInput.disabled = true;
                     sendButton.disabled = true;
-                    userInput.placeholder = 'Ожидание подключения...';
+                    fileButton.disabled = true;
+                    fileInput.disabled = true;
+                    userInput.placeholder = 'Введите API ключ для начала работы...';
                     providerStatus.className = 'status-indicator status-disconnected';
-                    
-                    if (AI_CONFIG.provider === 'groq') {
-                        connectionMessage.textContent = 'Groq: Проверьте API ключ';
-                    } else {
-                        connectionMessage.textContent = 'LM Studio: Убедитесь, что сервер запущен на 127.0.0.1:1234';
-                    }
-                    connectionMessage.className = 'message error-message';
-                    connectionMessage.style.display = 'block';
                 }
             }
             
@@ -952,13 +1068,12 @@
             // Основная функция для получения ответа от AI
             async function getAIResponse(userMessage) {
                 if (!isConnected) {
-                    return 'Ошибка подключения. Пожалуйста, проверьте настройки подключения.';
+                    return 'Ошибка подключения. Проверьте API ключ.';
                 }
                 
                 showTypingIndicator();
                 
                 try {
-                    // Формируем сообщения с системным промптом
                     const messages = [
                         { role: 'system', content: SYSTEM_PROMPT },
                         ...conversationHistory,
@@ -967,13 +1082,11 @@
                     
                     const response = await aiProvider.sendMessage(messages);
                     
-                    // Сохраняем в историю
                     conversationHistory.push(
                         { role: 'user', content: userMessage },
                         { role: 'assistant', content: response }
                     );
                     
-                    // Ограничиваем историю (последние 20 сообщений)
                     if (conversationHistory.length > 20) {
                         conversationHistory = conversationHistory.slice(-20);
                     }
@@ -992,7 +1105,6 @@
             async function sendMessage() {
                 const message = userInput.value.trim();
                 if (message && isConnected) {
-                    // Блокируем интерфейс на время обработки
                     sendButton.disabled = true;
                     userInput.disabled = true;
                     
@@ -1007,7 +1119,6 @@
                     } catch (error) {
                         addErrorMessage('Произошла непредвиденная ошибка при обработке запроса.');
                     } finally {
-                        // Разблокируем интерфейс
                         sendButton.disabled = false;
                         userInput.disabled = false;
                         userInput.focus();
@@ -1015,18 +1126,20 @@
                 }
             }
             
-            // Обработчик смены API ключа
-            changeApiKeyButton.addEventListener('click', function() {
-                const newKey = prompt('Введите новый Groq API ключ:');
-                if (newKey && newKey.trim()) {
-                    localStorage.setItem('groq_api_key', newKey.trim());
-                    AI_CONFIG.groq.apiKey = newKey.trim();
-                    alert('API ключ обновлен! Страница будет перезагружена.');
-                    location.reload();
+            // Обработчики событий
+            changeApiKeyButton.addEventListener('click', showApiKeyModal);
+            saveApiKeyBtn.addEventListener('click', saveApiKey);
+            cancelApiKeyBtn.addEventListener('click', function() {
+                apiKeyModal.style.display = 'none';
+                apiKeyInput.value = '';
+            });
+            
+            apiKeyInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    saveApiKey();
                 }
             });
             
-            // Обработчики событий
             sendButton.addEventListener('click', sendMessage);
             
             userInput.addEventListener('keydown', function(e) {
@@ -1052,37 +1165,20 @@
                 }
             });
             
-            // Обработчик смены провайдера
             providerSelect.addEventListener('change', function(e) {
                 AI_CONFIG.provider = e.target.value;
-                checkConnection();
+                if (AI_CONFIG.provider === 'groq' && !AI_CONFIG.groq.apiKey) {
+                    showApiKeyModal();
+                } else {
+                    checkConnection();
+                }
             });
             
-            // Периодическая проверка подключения
-            setInterval(checkConnection, 5000);
-            
             // Инициализация
-            async function initialize() {
-                // Инициализируем API ключ
-                const apiKeyLoaded = initializeApiKey();
-                
-                if (apiKeyLoaded) {
-                    await checkConnection();
-                    scrollToBottom();
-                    
-                    if (isConnected) {
-                        userInput.focus();
-                    }
-                } else {
-                    // Показываем сообщение, что нужен API ключ
-                    connectionMessage.textContent = 'Для начала работы введите Groq API ключ';
-                    connectionMessage.className = 'message error-message';
-                    connectionMessage.style.display = 'block';
-                    
-                    userInput.placeholder = 'Введите API ключ в появившемся окне и обновите страницу';
-                    userInput.disabled = true;
-                    sendButton.disabled = true;
-                }
+            function initialize() {
+                setConnectionStatus(false);
+                showApiKeyModal();
+                scrollToBottom();
             }
             
             // Запускаем инициализацию
@@ -1090,7 +1186,5 @@
         });
     </script>
 </body>
-</html>
-
 
 
