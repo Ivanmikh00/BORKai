@@ -48,10 +48,16 @@
             font-weight: 300;
         }
 
-        .provider-selector {
+        .header-controls {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .provider-selector {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -79,6 +85,32 @@
 
         .status-disconnected {
             background: #ff4444;
+        }
+
+        .api-key-button {
+            background: #1a1a1a;
+            color: #888888;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .api-key-button:hover {
+            background: #2a2a2a;
+            border-color: #555555;
+            color: #ffffff;
+        }
+
+        .api-key-button svg {
+            width: 16px;
+            height: 16px;
         }
 
         .chat-container {
@@ -376,14 +408,25 @@
                 font-size: 1.5rem;
             }
             
-            .provider-selector {
+            .header-controls {
                 top: 15px;
                 right: 15px;
+                gap: 10px;
             }
             
             .provider-selector select {
                 font-size: 11px;
                 padding: 5px 8px;
+            }
+            
+            .api-key-button {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .api-key-button svg {
+                width: 14px;
+                height: 14px;
             }
             
             .message {
@@ -435,12 +478,13 @@
                 font-size: 0.8rem;
             }
             
-            .provider-selector {
+            .header-controls {
                 position: relative;
                 top: auto;
                 right: auto;
                 justify-content: center;
                 margin-top: 8px;
+                gap: 8px;
             }
             
             .chat-container {
@@ -526,12 +570,19 @@
     <div class="header">
         <div class="logo">BORK<span class="logo-accent">AI</span></div>
         <div class="subtitle">Персональный ассистент для консультантов</div>
-        <div class="provider-selector">
-            <select id="aiProviderSelect">
-                <option value="lmstudio">LM Studio (Локальный)</option>
-                <option value="groq">Groq (Облачный)</option>
-            </select>
-            <div class="status-indicator" id="providerStatus"></div>
+        <div class="header-controls">
+            <div class="provider-selector">
+                <select id="aiProviderSelect">
+                    <option value="lmstudio">LM Studio (Локальный)</option>
+                    <option value="groq">Groq (Облачный)</option>
+                </select>
+                <div class="status-indicator" id="providerStatus"></div>
+            </div>
+            <button class="api-key-button" id="changeApiKey" title="Сменить API ключ">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                </svg>
+            </button>
         </div>
     </div>
     
@@ -575,16 +626,17 @@
             const inputContainer = document.getElementById('inputContainer');
             const providerSelect = document.getElementById('aiProviderSelect');
             const providerStatus = document.getElementById('providerStatus');
+            const changeApiKeyButton = document.getElementById('changeApiKey');
             
             // Конфигурация AI провайдеров
-            const AI_CONFIG = {
+            let AI_CONFIG = {
                 provider: 'lmstudio', // По умолчанию LM Studio
                 
                 // Настройки Groq
                 groq: {
-                    apiKey: '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', // ЗАМЕНИТЕ на ваш ключ Groq
+                    apiKey: '', // Будет заполнено из localStorage
                     endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-                    model: 'llama-3.1-8b-instant' // или 'mixtral-8x7b-32768', 'llama3-70b-8192'
+                    model: 'llama-3.1-8b-instant'
                 },
                 
                 // Настройки LM Studio
@@ -616,6 +668,48 @@
             typingIndicator.className = 'typing-indicator';
             typingIndicator.id = 'typingIndicator';
             typingIndicator.innerHTML = '<div class="typing-dots">BORK AI печатает <span></span><span></span><span></span></div>';
+            
+            // Функция для получения API ключа
+            function getApiKey() {
+                // Пробуем получить из localStorage
+                let savedKey = localStorage.getItem('groq_api_key');
+                
+                if (savedKey) {
+                    return savedKey;
+                }
+                
+                // Если нет в localStorage, запрашиваем у пользователя
+                let apiKey = prompt(`Для использования Groq AI введите ваш API ключ:
+
+🔐 Как получить ключ:
+1. Зарегистрируйтесь на groq.com
+2. Перейдите в Console → API Keys
+3. Создайте новый ключ
+4. Скопируйте и вставьте сюда
+
+Ваш ключ сохранится локально в браузере и никуда не передается.`);
+
+                if (apiKey && apiKey.trim()) {
+                    // Сохраняем в localStorage
+                    localStorage.setItem('groq_api_key', apiKey.trim());
+                    return apiKey.trim();
+                }
+                
+                return null;
+            }
+
+            // Инициализация API ключа
+            function initializeApiKey() {
+                const apiKey = getApiKey();
+                if (apiKey) {
+                    AI_CONFIG.groq.apiKey = apiKey;
+                    console.log('API ключ загружен');
+                    return true;
+                } else {
+                    console.log('API ключ не введен');
+                    return false;
+                }
+            }
             
             // Класс для работы с AI провайдерами
             class AIProvider {
@@ -694,8 +788,31 @@
                 
                 async testConnection() {
                     if (this.config.provider === 'groq') {
-                        // Для Groq проверяем наличие API ключа
-                        return this.config.groq.apiKey && this.config.groq.apiKey !== 'YOUR_GROQ_API_KEY';
+                        // Для Groq проверяем наличие API ключа и его валидность
+                        if (!this.config.groq.apiKey) {
+                            return false;
+                        }
+                        
+                        // Пробуем сделать тестовый запрос для проверки ключа
+                        try {
+                            const response = await fetch(this.config.groq.endpoint, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${this.config.groq.apiKey}`
+                                },
+                                body: JSON.stringify({
+                                    model: this.config.groq.model,
+                                    messages: [{ role: 'user', content: 'Hello' }],
+                                    max_tokens: 5
+                                })
+                            });
+                            
+                            return response.ok;
+                        } catch (error) {
+                            console.error('Connection test failed:', error);
+                            return false;
+                        }
                     } else {
                         // Для LM Studio проверяем доступность сервера
                         try {
@@ -898,6 +1015,17 @@
                 }
             }
             
+            // Обработчик смены API ключа
+            changeApiKeyButton.addEventListener('click', function() {
+                const newKey = prompt('Введите новый Groq API ключ:');
+                if (newKey && newKey.trim()) {
+                    localStorage.setItem('groq_api_key', newKey.trim());
+                    AI_CONFIG.groq.apiKey = newKey.trim();
+                    alert('API ключ обновлен! Страница будет перезагружена.');
+                    location.reload();
+                }
+            });
+            
             // Обработчики событий
             sendButton.addEventListener('click', sendMessage);
             
@@ -935,11 +1063,25 @@
             
             // Инициализация
             async function initialize() {
-                await checkConnection();
-                scrollToBottom();
+                // Инициализируем API ключ
+                const apiKeyLoaded = initializeApiKey();
                 
-                if (isConnected) {
-                    userInput.focus();
+                if (apiKeyLoaded) {
+                    await checkConnection();
+                    scrollToBottom();
+                    
+                    if (isConnected) {
+                        userInput.focus();
+                    }
+                } else {
+                    // Показываем сообщение, что нужен API ключ
+                    connectionMessage.textContent = 'Для начала работы введите Groq API ключ';
+                    connectionMessage.className = 'message error-message';
+                    connectionMessage.style.display = 'block';
+                    
+                    userInput.placeholder = 'Введите API ключ в появившемся окне и обновите страницу';
+                    userInput.disabled = true;
+                    sendButton.disabled = true;
                 }
             }
             
@@ -949,5 +1091,6 @@
     </script>
 </body>
 </html>
+
 
 
